@@ -1,8 +1,11 @@
 from flask import Flask, jsonify, request
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from books_list import books
 
 app = Flask(__name__)
+limiter = Limiter(app=app, key_func=get_remote_address)
 
 
 def find_book_by_id(book_id):
@@ -31,6 +34,7 @@ def method_not_allowed_error(error):
 
 
 @app.route('/api/books', methods=['GET', 'POST'])
+@limiter.limit("10/minute")
 def handle_books():
     if request.method == 'POST':
         # Get the new book data from the client
