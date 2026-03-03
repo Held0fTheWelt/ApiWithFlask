@@ -53,7 +53,11 @@ def handle_books():
         # Return the new book data to the client
         return jsonify(new_book), 201
     else:
-        # Handle the GET request
+        # Handle the GET request (with optional author filter)
+        author = request.args.get('author')
+        if author:
+            filtered_books = [book for book in books if book.get('author') == author]
+            return jsonify(filtered_books)
         return jsonify(books)
 
 
