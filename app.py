@@ -1,13 +1,8 @@
 from flask import Flask, jsonify, request
 
+from books_list import books
 
 app = Flask(__name__)
-
-# Our list of books
-books = [
-    {"id": 1, "title": "The Great Gatsby", "author": "F. Scott Fitzgerald"},
-    {"id": 2, "title": "1984", "author": "George Orwell"}
-]
 
 
 def find_book_by_id(book_id):
@@ -53,12 +48,24 @@ def handle_books():
         # Return the new book data to the client
         return jsonify(new_book), 201
     else:
-        # Handle the GET request (with optional author filter)
+        # Handle the GET request (with optional author filter and pagination)
         author = request.args.get('author')
+
+        # Start with all books or only those by a given author
         if author:
-            filtered_books = [book for book in books if book.get('author') == author]
-            return jsonify(filtered_books)
-        return jsonify(books)
+            base_books = [book for book in books if book.get('author') == author]
+        else:
+            base_books = books
+
+        # Pagination parameters with defaults
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 10))
+
+        start_index = (page - 1) * limit
+        end_index = start_index + limit
+
+        paginated_books = base_books[start_index:end_index]
+        return jsonify(paginated_books)
 
 
 @app.route('/api/books/<int:id>', methods=['PUT'])
